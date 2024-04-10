@@ -1,0 +1,16 @@
+---
+import Layout from "../layouts/Layout.astro";
+import MapLeaflet from "../components/Map.astro";
+import Header from "../components/Header.astro";
+import Aside from "../components/aside/Aside.astro";
+const isOwner = true;
+---
+
+<Layout title="Welcome to Reservify.">
+    <Header />
+    <main class="flex-1 flex">
+        <MapLeaflet />
+        <Aside />
+        {isOwner ? <AsideOwner /> : <AsideClient />}
+    </main>
+</Layout>

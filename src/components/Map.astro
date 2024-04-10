@@ -1,0 +1,75 @@
+---
+import "leaflet/dist/leaflet.css";
+---
+
+<div id="map" style="height: calc(100vh - 80px); width: 100vw;"></div>
+<script>
+    import L from "leaflet";
+
+    const topLeft = L.latLng(0, 1000);
+    const bottomRight = L.latLng(1000, 0);
+    const imageBounds = L.latLngBounds([topLeft, bottomRight]);
+    const map = L.map("map", {
+        zoomControl: false,
+        crs: L.CRS.Simple,
+        attributionControl: false,
+        maxBounds: imageBounds,
+    });
+
+    const image = L.imageOverlay("/floorplan.webp", imageBounds).addTo(map);
+    console.log(image.getBounds());
+    map.fitBounds(imageBounds);
+
+    type MarkerLayerGroup = L.LayerGroup<L.Marker> & {
+        _makeMarkersDraggable?: () => void;
+    };
+
+    const MarkerLayer: MarkerLayerGroup = L.layerGroup();
+    MarkerLayer.addTo(map);
+
+    MarkerLayer._makeMarkersDraggable = () => {
+        console.log(MarkerLayer);
+    };
+
+    const printCoords = (e: L.LeafletMouseEvent) => {
+        console.log(e.latlng);
+        const newMarker = L.marker(e.latlng, { draggable: false });
+        newMarker.addTo(MarkerLayer);
+    };
+
+    /* 
+    
+        const editMap = ()=>{
+            const editEvent = new CustomEvent("EDIT-MAP")
+            window.dispatchEvent(editEvent)
+        }
+    
+        const saveMap = ()=>{
+            const editEvent = new CustomEvent("SAVE-MAP")
+            window.dispatchEvent(editEvent)
+        }
+        
+        */
+
+    map.addEventListener("click", printCoords);
+
+    // HANDLE ADD POINTS
+    window.addEventListener("EDIT-MAP", () => {
+        console.log("*** EDIT MAP TRIGGERED ***");
+
+        MarkerLayer._makeMarkersDraggable();
+        map.addEventListener("click", printCoords);
+
+        MarkerLayer.eachLayer((layer) => {
+            layer.addEventListener("drag", (e) => {
+                console.log(e);
+            });
+        });
+    });
+
+    // HANDLE SAVE CHANGES
+    window.addEventListener("SAVE-MAP", () => {
+        console.log("*** SAVE MAP TRIGGERED ***");
+        map.removeEventListener("click", printCoords);
+    });
+</script>
